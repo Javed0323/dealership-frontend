@@ -88,8 +88,8 @@ export default function OfferCreate() {
     title: "title",
     description: "description",
     discount_percentage: 0,
-    start_date: 0,
-    end_date: 0,
+    start_date: "",
+    end_date: "",
     is_active: false,
   };
 
