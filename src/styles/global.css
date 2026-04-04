@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+    --color-accent: #3b82f6;
+    --color-accent-foreground: #ffffff;
+    --color-border: #e2e8f0;
+    --color-surface: #f8fafc;
+    --color-surface2: #f1f5f9;
+    --color-bg: #ffffff;
+    --color-foreground: #0f172a;
+    --color-muted-foreground: #94a3b8;
+
+    --animate-marquee: marquee 30s linear infinite;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
