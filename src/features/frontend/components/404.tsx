@@ -1,7 +1,7 @@
 // components/NotFound.tsx
 import React from "react";
 import { Link } from "react-router-dom";
-import { Car, Home, Search, ArrowLeft, Compass } from "lucide-react";
+import { Home, Search, ArrowLeft, Compass } from "lucide-react";
 
 const NotFound: React.FC = () => {
   return (

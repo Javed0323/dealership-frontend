@@ -18,9 +18,6 @@ import {
   Play,
   Pause,
   Calendar,
-  MapPin,
-  Phone,
-  Mail,
 } from "lucide-react";
 
 // ============================================
@@ -405,7 +402,7 @@ const AboutPage: React.FC = () => {
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-gray-900 to-gray-800 text-white overflow-hidden">
+      <section className="relative bg-linear-to-br from-gray-900 to-gray-800 text-white overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80')] bg-cover bg-center"></div>
         </div>

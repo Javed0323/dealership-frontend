@@ -1,6 +1,6 @@
 // components/Blog.tsx
 import React, { useState } from "react";
-import { Calendar, User, ArrowRight, Tag, Clock } from "lucide-react";
+import { Calendar, User, ArrowRight, Clock } from "lucide-react";
 
 interface BlogPost {
   id: number;
@@ -193,7 +193,7 @@ const Blog: React.FC = () => {
               </div>
 
               {/* Content */}
-              <div className="p-6 flex flex-col flex-grow">
+              <div className="p-6 flex flex-col grow">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
                     {post.category}
@@ -208,7 +208,7 @@ const Blog: React.FC = () => {
                   {post.title}
                 </h2>
 
-                <p className="text-gray-600 mb-4 line-clamp-3 flex-grow">
+                <p className="text-gray-600 mb-4 line-clamp-3 grow">
                   {post.excerpt}
                 </p>
 
