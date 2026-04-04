@@ -12,7 +12,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const siteKey = "6Ld06XssAAAAAIZC3PQ_p2t5AuxjFcu9SXbrJArw";
+  const siteKey = import.meta.env.RECAPTCHASTEKEY;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
