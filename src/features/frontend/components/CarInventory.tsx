@@ -15,6 +15,7 @@ import type { Offer } from "@/features/offers/types";
 import BrowseTabs from "./BrowseTabs";
 import InventoryPageHeader from "./InventoryPageHeader";
 import InventorySearchBar from "./InventorySearchBar";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 function CardSkeleton() {
@@ -51,6 +52,9 @@ export default function InventoryPage() {
   const [filterModel, setFilterModel] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
+  // Debounce search input to avoid too many API calls
+  const debouncedSearch = useDebounce(search, 500);
+
   const offset = Number(searchParams.get("offset") ?? 0);
   const sort = searchParams.get("sort") ?? undefined;
 
@@ -85,7 +89,7 @@ export default function InventoryPage() {
     ...appliedFilters,
     ...(filterMake ? { make: filterMake } : {}),
     ...(filterModel ? { model: filterModel } : {}),
-    ...(search ? { search } : {}),
+    ...(debouncedSearch ? { search: debouncedSearch } : {}),
   };
 
   const { data, isLoading, isError, refetch } = useQuery({
@@ -106,10 +110,10 @@ export default function InventoryPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Refetch when applied filters change
+  // Refetch when applied filters or search change
   useEffect(() => {
     refetch();
-  }, [appliedFilters, offset, sort, refetch]);
+  }, [appliedFilters, offset, sort, search, refetch]);
 
   const handlePageChange = (newOffset: number) => {
     setSearchParams((prev) => {
