@@ -444,10 +444,6 @@ export default function EntityForm<T extends Record<string, any>>({
     resetForm(initialValues); // ← was setFormData
   }, [initialValues]);
 
-  useEffect(() => {
-    if (loading) setSubmitState("loading");
-  }, [loading]);
-
   const handleChange = (name: keyof T, value: any) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     onFieldChange?.(name, value); // add this line
