@@ -910,31 +910,26 @@ export default function CarCreate() {
           </div>
 
           {/* ── Overview ── */}
-          {activeTab === "Overview" &&
-            (loading ? (
-              <p style={{ color: "#9ca3af" }}>Loading...</p>
-            ) : (
-              <EntityForm
-                fields={coreFields}
-                initialValues={core}
-                mode={isEdit ? "edit" : "create"}
-                onSubmit={isEdit ? handleUpdateCore : handleCreate}
-              />
-            ))}
+          {activeTab === "Overview" && (
+            <EntityForm
+              fields={coreFields}
+              initialValues={core}
+              mode={isEdit ? "edit" : "create"}
+              loading={loading}
+              onSubmit={isEdit ? handleUpdateCore : handleCreate}
+            />
+          )}
 
           {/* ── Engine ── */}
           {activeTab === "Engine" &&
             (isEdit ? (
-              loading ? (
-                <p style={{ color: "#9ca3af" }}>Loading...</p>
-              ) : (
-                <EntityForm
-                  fields={engineFields}
-                  initialValues={engine}
-                  mode="edit"
-                  onSubmit={handleUpdateEngine}
-                />
-              )
+              <EntityForm
+                fields={engineFields}
+                initialValues={engine}
+                mode="edit"
+                loading={loading}
+                onSubmit={handleUpdateEngine}
+              />
             ) : (
               <LockedPanel onGoToOverview={() => setActiveTab("Overview")} />
             ))}
@@ -942,16 +937,13 @@ export default function CarCreate() {
           {/* ── Dimensions ── */}
           {activeTab === "Dimensions" &&
             (isEdit ? (
-              loading ? (
-                <p style={{ color: "#9ca3af" }}>Loading...</p>
-              ) : (
-                <EntityForm
-                  fields={dimensionsFields}
-                  initialValues={dimensions}
-                  mode="edit"
-                  onSubmit={handleUpdateDimensions}
-                />
-              )
+              <EntityForm
+                fields={dimensionsFields}
+                initialValues={dimensions}
+                mode="edit"
+                loading={loading}
+                onSubmit={handleUpdateDimensions}
+              />
             ) : (
               <LockedPanel onGoToOverview={() => setActiveTab("Overview")} />
             ))}
@@ -959,16 +951,13 @@ export default function CarCreate() {
           {/* ── Safety ── */}
           {activeTab === "Safety" &&
             (isEdit ? (
-              loading ? (
-                <p style={{ color: "#9ca3af" }}>Loading...</p>
-              ) : (
-                <EntityForm
-                  fields={safetyFields}
-                  initialValues={safety}
-                  mode="edit"
-                  onSubmit={handleUpdateSafety}
-                />
-              )
+              <EntityForm
+                fields={safetyFields}
+                initialValues={safety}
+                mode="edit"
+                loading={loading}
+                onSubmit={handleUpdateSafety}
+              />
             ) : (
               <LockedPanel onGoToOverview={() => setActiveTab("Overview")} />
             ))}
@@ -976,16 +965,13 @@ export default function CarCreate() {
           {/* ── Features ── */}
           {activeTab === "Features" &&
             (isEdit ? (
-              loading ? (
-                <p style={{ color: "#9ca3af" }}>Loading...</p>
-              ) : (
-                <EntityForm
-                  fields={featuresFields}
-                  initialValues={features}
-                  mode="edit"
-                  onSubmit={handleUpdateFeatures}
-                />
-              )
+              <EntityForm
+                fields={featuresFields}
+                initialValues={features}
+                mode="edit"
+                loading={loading}
+                onSubmit={handleUpdateFeatures}
+              />
             ) : (
               <LockedPanel onGoToOverview={() => setActiveTab("Overview")} />
             ))}

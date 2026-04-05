@@ -581,6 +581,20 @@ export default function EntityForm<T extends Record<string, any>>({
     );
   };
 
+  // after all hooks
+  if (loading) {
+    return (
+      <div className="space-y-4 p-4">
+        {fields.map((_, i) => (
+          <div key={i} className="space-y-1">
+            <div className="h-3 w-24 bg-gray-200 rounded animate-pulse" />
+            <div className="h-9 w-full bg-gray-100 rounded animate-pulse" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <>
       <style>{`
