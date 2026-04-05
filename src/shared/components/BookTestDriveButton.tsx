@@ -19,7 +19,6 @@ interface BookTestDriveButtonProps {
 export const BookTestDriveButton: React.FC<BookTestDriveButtonProps> = ({
   inventoryId,
   inventoryName,
-  variant = "primary",
   className = "",
   onBookingSuccess,
   onBookingError,
@@ -39,21 +38,6 @@ export const BookTestDriveButton: React.FC<BookTestDriveButtonProps> = ({
       onBookingSuccess?.();
     } else {
       onBookingError?.(result.error);
-    }
-  };
-
-  const getButtonStyles = () => {
-    if (isBooked) return "cursor-not-allowed opacity-60";
-
-    switch (variant) {
-      case "primary":
-        return "bg-blue-600 text-white hover:bg-blue-700";
-      case "secondary":
-        return "bg-gray-600 text-white hover:bg-gray-700";
-      case "outline":
-        return "border border-blue-600 text-blue-600 hover:bg-blue-50";
-      default:
-        return "bg-blue-600 text-white hover:bg-blue-700";
     }
   };
 
