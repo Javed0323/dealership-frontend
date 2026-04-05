@@ -10,180 +10,196 @@ import {
   Instagram,
   Twitter,
   Youtube,
-  ChevronRight,
 } from "lucide-react";
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
-  const quickLinks = [
-    { name: "New Inventory", href: "/inventory" },
-    { name: "Pre-Owned Inventory", href: "/inventory" },
-    { name: "Special Offers", href: "/specials" },
-    { name: "Trade-In Value", href: "/trade-in" },
-    { name: "Financing", href: "/financing" },
+  const inventoryLinks = [
+    { name: "Browse Inventory", href: "/inventory" },
+    { name: "New Arrivals", href: "/new-arrivals" },
+    { name: "Featured Inventory", href: "/featured-inventory" },
+    { name: "Special Offers", href: "/offers" },
   ];
 
-  const serviceLinks = [
-    { name: "Schedule Service", href: "/service" },
-    { name: "Service Specials", href: "/specials" },
-    { name: "Parts Center", href: "/parts" },
+  const servicesLinks = [
+    { name: "Schedule a Test Drive", href: "/schedule-test-drive" },
+    { name: "Customer Reviews", href: "/user-reviews" },
+    { name: "Blog & News", href: "/blogs" },
   ];
 
-  const aboutLinks = [
+  const companyLinks = [
     { name: "About Us", href: "/about" },
-    { name: "Customer Reviews", href: "/testimonials" },
-    { name: "Blog & News", href: "/blog" },
     { name: "Contact Us", href: "/contact" },
   ];
 
   const legalLinks = [
-    { name: "Privacy Policy", href: "/privacy" },
-    { name: "Terms of Service", href: "/terms" },
-    { name: "Accessibility", href: "/accessibility" }, // Add this
+    { name: "Privacy Policy", href: "/privacy-policy" },
+    { name: "Terms of Service", href: "/terms-of-service" },
+    { name: "Accessibility", href: "/accessibility" },
   ];
 
   const socialLinks = [
     { icon: Facebook, href: "https://facebook.com", label: "Facebook" },
     { icon: Instagram, href: "https://instagram.com", label: "Instagram" },
-    { icon: Twitter, href: "https://twitter.com", label: "Twitter" },
+    { icon: Twitter, href: "https://twitter.com", label: "Twitter / X" },
     { icon: Youtube, href: "https://youtube.com", label: "YouTube" },
   ];
 
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      {/* Main Footer */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
-          {/* Brand Column */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Car className="h-8 w-8 text-white" strokeWidth={1.5} />
-              <span className="text-xl font-semibold tracking-tight text-white">
+    <footer className="bg-gray-950 text-gray-400" aria-label="Site footer">
+      {/* Main Footer Grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10">
+          {/* Brand Column — spans 2 cols on lg */}
+          <div className="lg:col-span-2 space-y-5">
+            {/* Logo */}
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2.5 text-white group"
+              aria-label="AutoElite — go to homepage"
+            >
+              <Car
+                className="h-7 w-7 shrink-0 text-white"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
+              <span className="text-lg font-semibold tracking-tight">
                 AutoElite
               </span>
-            </div>
-            <p className="text-sm text-gray-400 leading-relaxed">
-              Your trusted partner in finding the perfect vehicle. Premium
+            </Link>
+
+            <p className="text-sm text-gray-500 leading-relaxed max-w-xs">
+              Your trusted partner in finding the perfect vehicle — premium
               selection, exceptional service, and transparent pricing.
             </p>
-            <div className="space-y-2 pt-2">
-              <div className="flex items-center space-x-3 text-sm text-gray-400">
-                <MapPin className="h-4 w-4 shrink-0" />
+
+            {/* Contact — structured for SEO / rich snippets */}
+            <address className="not-italic space-y-2.5 text-sm text-gray-500">
+              <div className="flex items-start gap-3">
+                <MapPin
+                  className="h-4 w-4 mt-0.5 shrink-0"
+                  aria-hidden="true"
+                />
                 <span>123 Auto Avenue, Los Angeles, CA 90001</span>
               </div>
-              <div className="flex items-center space-x-3 text-sm text-gray-400">
-                <Phone className="h-4 w-4 shrink-0" />
-                <span>(555) 123-4567</span>
+              <div className="flex items-center gap-3">
+                <Phone className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <a
+                  href="tel:+15551234567"
+                  className="hover:text-white transition-colors"
+                >
+                  (555) 123-4567
+                </a>
               </div>
-              <div className="flex items-center space-x-3 text-sm text-gray-400">
-                <Mail className="h-4 w-4 shrink-0" />
-                <span>info@autoelite.com</span>
+              <div className="flex items-center gap-3">
+                <Mail className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <a
+                  href="mailto:info@autoelite.com"
+                  className="hover:text-white transition-colors"
+                >
+                  info@autoelite.com
+                </a>
               </div>
+            </address>
+
+            {/* Social */}
+            <div className="flex gap-2 pt-1">
+              {socialLinks.map((social) => {
+                const Icon = social.icon;
+                return (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label}
+                    className="p-2 border border-gray-800 hover:border-gray-600 hover:text-white transition-colors"
+                  >
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                  </a>
+                );
+              })}
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
-              Quick Links
+          {/* Inventory */}
+          <nav aria-label="Inventory links">
+            <h3 className="text-xs font-semibold text-white uppercase tracking-widest mb-4">
+              Inventory
             </h3>
             <ul className="space-y-3">
-              {quickLinks.map((link) => (
+              {inventoryLinks.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-sm text-gray-400 hover:text-white transition-colors duration-200 inline-flex items-center group"
+                    className="text-sm hover:text-white transition-colors"
                   >
-                    <ChevronRight className="h-3 w-3 mr-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                     {link.name}
                   </Link>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
-          {/* Service & Support */}
-          <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
-              Service & Support
+          {/* Services */}
+          <nav aria-label="Services links">
+            <h3 className="text-xs font-semibold text-white uppercase tracking-widest mb-4">
+              Services
             </h3>
             <ul className="space-y-3">
-              {serviceLinks.map((link) => (
+              {servicesLinks.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-sm text-gray-400 hover:text-white transition-colors duration-200 inline-flex items-center group"
+                    className="text-sm hover:text-white transition-colors"
                   >
-                    <ChevronRight className="h-3 w-3 mr-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                     {link.name}
                   </Link>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
-          {/* About & Social */}
-          <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
-              About AutoElite
+          {/* Company */}
+          <nav aria-label="Company links">
+            <h3 className="text-xs font-semibold text-white uppercase tracking-widest mb-4">
+              Company
             </h3>
-            <ul className="space-y-3 mb-6">
-              {aboutLinks.map((link) => (
+            <ul className="space-y-3">
+              {companyLinks.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-sm text-gray-400 hover:text-white transition-colors duration-200 inline-flex items-center group"
+                    className="text-sm hover:text-white transition-colors"
                   >
-                    <ChevronRight className="h-3 w-3 mr-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                     {link.name}
                   </Link>
                 </li>
               ))}
             </ul>
-
-            {/* Social Links */}
-            <div>
-              <h4 className="text-sm font-medium text-white mb-3">Follow Us</h4>
-              <div className="flex space-x-3">
-                {socialLinks.map((social) => {
-                  const Icon = social.icon;
-                  return (
-                    <a
-                      key={social.label}
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors duration-200"
-                      aria-label={social.label}
-                    >
-                      <Icon className="h-5 w-5 text-gray-400 hover:text-white transition-colors" />
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+          </nav>
         </div>
       </div>
 
       {/* Bottom Bar */}
       <div className="border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-            <p>© {currentYear} AutoElite. All rights reserved.</p>
-            <div className="flex space-x-6">
-              {legalLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.href}
-                  className="hover:text-white transition-colors"
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-600">
+          <p>© {currentYear} AutoElite. All rights reserved.</p>
+          <nav
+            aria-label="Legal links"
+            className="flex flex-wrap gap-x-5 gap-y-1 justify-center"
+          >
+            {legalLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.href}
+                className="hover:text-white transition-colors"
+              >
+                {link.name}
+              </Link>
+            ))}
+          </nav>
         </div>
       </div>
     </footer>

@@ -5,10 +5,9 @@ import { GetCar } from "../api";
 import { GetInventory } from "@/features/frontend/api";
 import type { CarRead } from "../types";
 import type { Inventory } from "@/features/inventory/types";
-import { CreateTestDrive } from "@/features/test_drives/api";
-import BookTestDrive from "@/features/frontend/pages/BookTestDrive";
 import { GetOffers } from "@/features/offers/api";
 import type { Offer } from "@/features/offers/types";
+import { BookTestDriveButton } from "@/shared/components/BookTestDriveButton";
 
 // ─── Scroll spy sections ──────────────────────────────────────────────────────
 const SECTIONS = [
@@ -194,25 +193,6 @@ export default function CarDetails() {
   const [heroIndex, setHeroIndex] = useState(0);
   const [lightbox, setLightbox] = useState<number | null>(null);
 
-  // Inside your component, add state
-  const [isTestDriveModalOpen, setIsTestDriveModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Add handler function
-  const handleBookTestDrive = async (data: any) => {
-    setIsSubmitting(true);
-    try {
-      await CreateTestDrive(data);
-      alert("Test drive booked successfully!");
-      setIsTestDriveModalOpen(false);
-    } catch (error) {
-      console.error("Error booking test drive:", error);
-      alert("Failed to book test drive. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   // Step 1 — fetch the specific inventory unit
   const {
     data: inventory,
@@ -304,7 +284,7 @@ export default function CarDetails() {
   return (
     <div className="min-h-screen bg-white text-zinc-900">
       {/* ── Top Nav Bar ─────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-40 bg-white border-b border-zinc-200 mt-2">
+      <nav className="sticky top-0 z-30 bg-white border-b border-zinc-200 mt-2">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
@@ -873,12 +853,21 @@ export default function CarDetails() {
                 <button className="w-full bg-zinc-900 text-white text-xs font-bold uppercase tracking-widest py-3.5 hover:bg-zinc-700 transition-colors">
                   Inquire About This Vehicle
                 </button>
-                <button
-                  onClick={() => setIsTestDriveModalOpen(true)}
-                  className="w-full border border-zinc-200 text-zinc-700 text-xs font-bold uppercase tracking-widest py-3.5 hover:border-zinc-400 transition-colors"
-                >
-                  Schedule a Test Drive
-                </button>
+                <BookTestDriveButton
+                  inventoryId={inventory.id.toString()}
+                  inventoryName={`${car?.year} ${car?.make} ${car?.model}`}
+                  variant="primary"
+                  onBookingSuccess={() => {
+                    // Optional: Additional logic after successful booking
+                    console.log(
+                      "Booking successful, maybe redirect or show message",
+                    );
+                  }}
+                  onBookingError={(error) => {
+                    // Optional: Handle error differently
+                    console.error("Booking failed:", error);
+                  }}
+                />
               </div>
             </div>
 
@@ -932,16 +921,6 @@ export default function CarDetails() {
           index={lightbox}
           onClose={() => setLightbox(null)}
           onNav={(i) => setLightbox(i)}
-        />
-      )}
-
-      {isTestDriveModalOpen && (
-        <BookTestDrive
-          inventoryId={inventory?.id} // Pass your unit/inventory ID
-          inventoryName={`${car?.year} ${car?.make} ${car?.model}`} // Vehicle name
-          onSubmit={handleBookTestDrive}
-          onClose={() => setIsTestDriveModalOpen(false)}
-          isLoading={isSubmitting}
         />
       )}
     </div>

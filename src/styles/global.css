@@ -22,3 +22,8 @@
         transform: translateX(-50%);
     }
 }
+
+/* hide the scrollbar */
+*::-webkit-scrollbar {
+    display: none;
+}
