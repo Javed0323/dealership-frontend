@@ -18,6 +18,7 @@ import {
   UpdateCarFeatures,
 } from "../api";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 
 // ── Field definitions ─────────────────────────────────────────────────────────
 
@@ -665,26 +666,27 @@ export default function CarCreate() {
     navigate(`/admin/car/${created.id}/edit`);
   };
 
+  const queryClient = useQueryClient();
+
   const handleUpdateCore = async (data: CarBase) => {
     await UpdateCar(carId!, data);
-    // refresh the url to trigger re-fetch and update all tabs with latest data
-    navigate(`/admin/car/${carId}/edit`, { replace: true });
+    queryClient.invalidateQueries({ queryKey: ["car", carId] });
   };
   const handleUpdateEngine = async (data: CarEngineCreate) => {
     await UpdateCarEngine(carId!, data);
-    navigate(`/admin/car/${carId}/edit`, { replace: true });
+    queryClient.invalidateQueries({ queryKey: ["car", carId] });
   };
   const handleUpdateDimensions = async (data: CarDimensionsCreate) => {
     await UpdateCarDimensions(carId!, data);
-    navigate(`/admin/car/${carId}/edit`, { replace: true });
+    queryClient.invalidateQueries({ queryKey: ["car", carId] });
   };
   const handleUpdateSafety = async (data: CarSafetyCreate) => {
     await UpdateCarSafety(carId!, data);
-    navigate(`/admin/car/${carId}/edit`, { replace: true });
+    queryClient.invalidateQueries({ queryKey: ["car", carId] });
   };
   const handleUpdateFeatures = async (data: CarFeaturesCreate) => {
     await UpdateCarFeatures(carId!, data);
-    navigate(`/admin/car/${carId}/edit`, { replace: true });
+    queryClient.invalidateQueries({ queryKey: ["car", carId] });
   };
 
   // ── Render ────────────────────────────────────────────────────────────────────
