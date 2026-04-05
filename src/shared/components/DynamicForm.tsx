@@ -428,6 +428,7 @@ export default function EntityForm<T extends Record<string, any>>({
   const {
     currentData: formData,
     setCurrentData: setFormData,
+    resetForm,
     hasChanges,
     markAsSubmitted,
     resetToLastSubmitted,
@@ -438,8 +439,9 @@ export default function EntityForm<T extends Record<string, any>>({
   >("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Change this
   useEffect(() => {
-    setFormData(initialValues);
+    resetForm(initialValues); // ← was setFormData
   }, [initialValues]);
 
   useEffect(() => {
@@ -587,8 +589,8 @@ export default function EntityForm<T extends Record<string, any>>({
       <div className="space-y-4 p-4">
         {fields.map((_, i) => (
           <div key={i} className="space-y-1">
-            <div className="h-3 w-24 bg-gray-200 rounded animate-pulse" />
-            <div className="h-9 w-full bg-gray-100 rounded animate-pulse" />
+            <div className="h-3 w-24 bg-gray-400 rounded animate-pulse" />
+            <div className="h-9 w-full bg-gray-300 rounded animate-pulse" />
           </div>
         ))}
       </div>
