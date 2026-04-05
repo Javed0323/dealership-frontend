@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import EntityForm, { type FormField } from "@/shared/components/DynamicForm";
 import type {
   CarBase,
@@ -18,7 +18,6 @@ import {
   UpdateCarFeatures,
 } from "../api";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
 
 // ── Field definitions ─────────────────────────────────────────────────────────
 
@@ -634,22 +633,22 @@ export default function CarCreate() {
   const [features, setFeatures] =
     React.useState<CarFeaturesCreate>(defaultFeatures);
 
-  useEffect(() => {
+  const [loading, setLoading] = useState(isEdit); // true if edit mode
+  const fetchCar = async () => {
+    setLoading(true);
     if (!carId) return;
-    GetCar(carId).then((data) => {
-      const {
-        engine: e,
-        dimensions: d,
-        safety: s,
-        features: f,
-        ...base
-      } = data;
-      setCore(base);
-      if (e) setEngine(e);
-      if (d) setDimensions(d);
-      if (s) setSafety(s);
-      if (f) setFeatures(f);
-    });
+    const data = await GetCar(carId);
+    const { engine: e, dimensions: d, safety: s, features: f, ...base } = data;
+    setCore(base);
+    if (e) setEngine(e);
+    if (d) setDimensions(d);
+    if (s) setSafety(s);
+    if (f) setFeatures(f);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchCar();
   }, [carId]);
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
@@ -666,27 +665,25 @@ export default function CarCreate() {
     navigate(`/admin/car/${created.id}/edit`);
   };
 
-  const queryClient = useQueryClient();
-
   const handleUpdateCore = async (data: CarBase) => {
     await UpdateCar(carId!, data);
-    queryClient.invalidateQueries({ queryKey: ["car", carId] });
+    await fetchCar();
   };
   const handleUpdateEngine = async (data: CarEngineCreate) => {
     await UpdateCarEngine(carId!, data);
-    queryClient.invalidateQueries({ queryKey: ["car", carId] });
+    await fetchCar();
   };
   const handleUpdateDimensions = async (data: CarDimensionsCreate) => {
     await UpdateCarDimensions(carId!, data);
-    queryClient.invalidateQueries({ queryKey: ["car", carId] });
+    await fetchCar();
   };
   const handleUpdateSafety = async (data: CarSafetyCreate) => {
     await UpdateCarSafety(carId!, data);
-    queryClient.invalidateQueries({ queryKey: ["car", carId] });
+    await fetchCar();
   };
   const handleUpdateFeatures = async (data: CarFeaturesCreate) => {
     await UpdateCarFeatures(carId!, data);
-    queryClient.invalidateQueries({ queryKey: ["car", carId] });
+    await fetchCar();
   };
 
   // ── Render ────────────────────────────────────────────────────────────────────
@@ -913,24 +910,31 @@ export default function CarCreate() {
           </div>
 
           {/* ── Overview ── */}
-          {activeTab === "Overview" && (
-            <EntityForm
-              fields={coreFields}
-              initialValues={core}
-              mode={isEdit ? "edit" : "create"}
-              onSubmit={isEdit ? handleUpdateCore : handleCreate}
-            />
-          )}
+          {activeTab === "Overview" &&
+            (loading ? (
+              <p style={{ color: "#9ca3af" }}>Loading...</p>
+            ) : (
+              <EntityForm
+                fields={coreFields}
+                initialValues={core}
+                mode={isEdit ? "edit" : "create"}
+                onSubmit={isEdit ? handleUpdateCore : handleCreate}
+              />
+            ))}
 
           {/* ── Engine ── */}
           {activeTab === "Engine" &&
             (isEdit ? (
-              <EntityForm
-                fields={engineFields}
-                initialValues={engine}
-                mode="edit"
-                onSubmit={handleUpdateEngine}
-              />
+              loading ? (
+                <p style={{ color: "#9ca3af" }}>Loading...</p>
+              ) : (
+                <EntityForm
+                  fields={engineFields}
+                  initialValues={engine}
+                  mode="edit"
+                  onSubmit={handleUpdateEngine}
+                />
+              )
             ) : (
               <LockedPanel onGoToOverview={() => setActiveTab("Overview")} />
             ))}
@@ -938,12 +942,16 @@ export default function CarCreate() {
           {/* ── Dimensions ── */}
           {activeTab === "Dimensions" &&
             (isEdit ? (
-              <EntityForm
-                fields={dimensionsFields}
-                initialValues={dimensions}
-                mode="edit"
-                onSubmit={handleUpdateDimensions}
-              />
+              loading ? (
+                <p style={{ color: "#9ca3af" }}>Loading...</p>
+              ) : (
+                <EntityForm
+                  fields={dimensionsFields}
+                  initialValues={dimensions}
+                  mode="edit"
+                  onSubmit={handleUpdateDimensions}
+                />
+              )
             ) : (
               <LockedPanel onGoToOverview={() => setActiveTab("Overview")} />
             ))}
@@ -951,12 +959,16 @@ export default function CarCreate() {
           {/* ── Safety ── */}
           {activeTab === "Safety" &&
             (isEdit ? (
-              <EntityForm
-                fields={safetyFields}
-                initialValues={safety}
-                mode="edit"
-                onSubmit={handleUpdateSafety}
-              />
+              loading ? (
+                <p style={{ color: "#9ca3af" }}>Loading...</p>
+              ) : (
+                <EntityForm
+                  fields={safetyFields}
+                  initialValues={safety}
+                  mode="edit"
+                  onSubmit={handleUpdateSafety}
+                />
+              )
             ) : (
               <LockedPanel onGoToOverview={() => setActiveTab("Overview")} />
             ))}
@@ -964,12 +976,16 @@ export default function CarCreate() {
           {/* ── Features ── */}
           {activeTab === "Features" &&
             (isEdit ? (
-              <EntityForm
-                fields={featuresFields}
-                initialValues={features}
-                mode="edit"
-                onSubmit={handleUpdateFeatures}
-              />
+              loading ? (
+                <p style={{ color: "#9ca3af" }}>Loading...</p>
+              ) : (
+                <EntityForm
+                  fields={featuresFields}
+                  initialValues={features}
+                  mode="edit"
+                  onSubmit={handleUpdateFeatures}
+                />
+              )
             ) : (
               <LockedPanel onGoToOverview={() => setActiveTab("Overview")} />
             ))}
