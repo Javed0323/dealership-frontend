@@ -8,6 +8,9 @@ import type { Inventory } from "@/features/inventory/types";
 import { GetOffers } from "@/features/offers/api";
 import type { Offer } from "@/features/offers/types";
 import { BookTestDriveButton } from "@/shared/components/BookTestDriveButton";
+import { InquiryModal } from "@/shared/components/InquiryModal";
+import { useInquired } from "@/shared/hooks/Useinquired";
+import { CheckCircle } from "lucide-react"; // if not already imported
 
 // ─── Scroll spy sections ──────────────────────────────────────────────────────
 const SECTIONS = [
@@ -192,6 +195,7 @@ export default function CarDetails() {
   const [activeSection, setActiveSection] = useState("overview");
   const [heroIndex, setHeroIndex] = useState(0);
   const [lightbox, setLightbox] = useState<number | null>(null);
+  const [inquiryOpen, setInquiryOpen] = useState(false);
 
   // Step 1 — fetch the specific inventory unit
   const {
@@ -203,6 +207,7 @@ export default function CarDetails() {
     queryFn: () => GetInventory(Number(inventoryId)),
     enabled: !!inventoryId,
   });
+  const { inquired, markAsInquired } = useInquired(inventory?.id || 0);
 
   // Step 2 — fetch the parent car once we have car_id
   const {
@@ -850,8 +855,23 @@ export default function CarDetails() {
                 </>
               )}
               <div className="mt-5 space-y-2">
-                <button className="w-full bg-zinc-900 text-white text-xs font-bold uppercase tracking-widest py-3.5 hover:bg-zinc-700 transition-colors">
-                  Inquire About This Vehicle
+                <button
+                  onClick={() => !inquired && setInquiryOpen(true)}
+                  disabled={inquired}
+                  className={`w-full text-xs font-bold uppercase tracking-widest py-3.5 transition-colors flex items-center justify-center gap-2 ${
+                    inquired
+                      ? "bg-zinc-100 text-zinc-400 cursor-not-allowed border border-zinc-200"
+                      : "bg-zinc-900 text-white hover:bg-zinc-700"
+                  }`}
+                >
+                  {inquired ? (
+                    <>
+                      <CheckCircle className="h-4 w-4" />
+                      Inquiry Sent
+                    </>
+                  ) : (
+                    "Inquire About This Vehicle"
+                  )}
                 </button>
                 <BookTestDriveButton
                   inventoryId={inventory.id.toString()}
@@ -923,6 +943,18 @@ export default function CarDetails() {
           onNav={(i) => setLightbox(i)}
         />
       )}
+
+      <InquiryModal
+        isOpen={inquiryOpen}
+        onClose={() => setInquiryOpen(false)}
+        onSuccess={markAsInquired}
+        vehicle={{
+          inventoryId: inventory.id,
+          title: title,
+          stockNumber: inventory.stock_number,
+          price: formatPrice(displayPrice),
+        }}
+      />
     </div>
   );
 }

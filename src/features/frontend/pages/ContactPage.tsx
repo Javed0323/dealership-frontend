@@ -7,6 +7,7 @@ import {
   Clock,
   Send,
   CheckCircle,
+  AlertCircle,
   Facebook,
   Instagram,
   Twitter,
@@ -14,7 +15,14 @@ import {
   MessageCircle,
   Calendar,
   Navigation,
+  Loader2,
 } from "lucide-react";
+import axios from "@/shared/api/axios";
+import { useNavigate } from "react-router-dom";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface FormData {
   name: string;
@@ -22,21 +30,106 @@ interface FormData {
   phone: string;
   subject: string;
   message: string;
-  preferredContact: "email" | "phone";
+  preferred_contact: "email" | "phone";
 }
 
-const ContactPage: React.FC = () => {
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    email: "",
-    phone: "",
-    subject: "",
-    message: "",
-    preferredContact: "email",
-  });
+type SubmitState = "idle" | "submitting" | "success" | "error";
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+// ---------------------------------------------------------------------------
+// Static data
+// ---------------------------------------------------------------------------
+
+const contactInfo = [
+  {
+    icon: Phone,
+    title: "Phone",
+    details: [
+      "Sales: (555) 123-4567",
+      "Service: (555) 123-4568",
+      "Parts: (555) 123-4569",
+    ],
+    action: "Call Sales",
+    href: "tel:+5551234567",
+  },
+  {
+    icon: Mail,
+    title: "Email",
+    details: [
+      "Sales: sales@autoelite.com",
+      "Service: service@autoelite.com",
+      "Support: support@autoelite.com",
+    ],
+    action: "Send Email",
+    href: "mailto:sales@autoelite.com",
+  },
+  {
+    icon: MapPin,
+    title: "Visit Us",
+    details: ["123 Auto Avenue", "Los Angeles, CA 90001", "United States"],
+    action: "Get Directions",
+    href: "https://maps.google.com/?q=123+Auto+Avenue+Los+Angeles+CA",
+  },
+  {
+    icon: Clock,
+    title: "Hours",
+    details: [
+      "Mon – Fri: 9:00 AM – 8:00 PM",
+      "Saturday: 10:00 AM – 6:00 PM",
+      "Sunday: 11:00 AM – 5:00 PM",
+    ],
+    action: null,
+    href: undefined,
+  },
+];
+
+const socialLinks = [
+  { icon: Facebook, href: "https://facebook.com", label: "Facebook" },
+  { icon: Instagram, href: "https://instagram.com", label: "Instagram" },
+  { icon: Twitter, href: "https://twitter.com", label: "Twitter/X" },
+  { icon: Youtube, href: "https://youtube.com", label: "YouTube" },
+  { icon: MessageCircle, href: "https://wa.me/15551234567", label: "WhatsApp" },
+];
+
+const EMPTY_FORM: FormData = {
+  name: "",
+  email: "",
+  phone: "",
+  subject: "",
+  message: "",
+  preferred_contact: "email",
+};
+
+// ---------------------------------------------------------------------------
+// Small reusable field components
+// ---------------------------------------------------------------------------
+
+const inputClass =
+  "w-full px-3 py-2 text-sm border border-gray-200 bg-white text-gray-900 placeholder-gray-400 " +
+  "focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors";
+
+const Label: React.FC<{
+  htmlFor: string;
+  required?: boolean;
+  children: React.ReactNode;
+}> = ({ htmlFor, required, children }) => (
+  <label
+    htmlFor={htmlFor}
+    className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5"
+  >
+    {children}
+    {required && <span className="text-gray-400 ml-0.5">*</span>}
+  </label>
+);
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
+
+const ContactPage: React.FC = () => {
+  const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
+  const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const navigate = useNavigate();
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -49,159 +142,74 @@ const ContactPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    setSubmitState("submitting");
+    setErrorMessage("");
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        subject: "",
-        message: "",
-        preferredContact: "email",
-      });
-    }, 3000);
+    try {
+      await axios.post("/contact/", formData);
+      setSubmitState("success");
+      setFormData(EMPTY_FORM);
+    } catch (err: any) {
+      const detail =
+        err?.response?.data?.detail ||
+        "Something went wrong. Please try again or contact us directly.";
+      setErrorMessage(
+        typeof detail === "string" ? detail : JSON.stringify(detail),
+      );
+      setSubmitState("error");
+    }
   };
 
-  const contactInfo = [
-    {
-      icon: Phone,
-      title: "Phone",
-      details: [
-        "Sales: (555) 123-4567",
-        "Service: (555) 123-4568",
-        "Parts: (555) 123-4569",
-      ],
-      action: "Call Sales",
-      href: "tel:+5551234567",
-    },
-    {
-      icon: Mail,
-      title: "Email",
-      details: [
-        "Sales: sales@autoelite.com",
-        "Service: service@autoelite.com",
-        "Support: support@autoelite.com",
-      ],
-      action: "Send Email",
-      href: "mailto:sales@autoelite.com",
-    },
-    {
-      icon: MapPin,
-      title: "Visit Us",
-      details: ["123 Auto Avenue", "Los Angeles, CA 90001", "United States"],
-      action: "Get Directions",
-      href: "https://maps.google.com/?q=123+Auto+Avenue+Los+Angeles+CA",
-    },
-    {
-      icon: Clock,
-      title: "Hours",
-      details: [
-        "Monday-Friday: 9:00 AM - 8:00 PM",
-        "Saturday: 10:00 AM - 6:00 PM",
-        "Sunday: 11:00 AM - 5:00 PM",
-      ],
-      action: null,
-    },
-  ];
-
-  const socialLinks = [
-    {
-      icon: Facebook,
-      href: "https://facebook.com",
-      label: "Facebook",
-      color: "hover:bg-[#1877f2]",
-    },
-    {
-      icon: Instagram,
-      href: "https://instagram.com",
-      label: "Instagram",
-      color: "hover:bg-[#e4405f]",
-    },
-    {
-      icon: Twitter,
-      href: "https://twitter.com",
-      label: "Twitter",
-      color: "hover:bg-[#1da1f2]",
-    },
-    {
-      icon: Youtube,
-      href: "https://youtube.com",
-      label: "YouTube",
-      color: "hover:bg-[#ff0000]",
-    },
-    {
-      icon: MessageCircle,
-      href: "https://wa.me/15551234567",
-      label: "WhatsApp",
-      color: "hover:bg-[#25d366]",
-    },
-  ];
+  const resetForm = () => {
+    setSubmitState("idle");
+    setErrorMessage("");
+  };
 
   return (
-    <div className="bg-white">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-gray-900 to-gray-800 text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80')] bg-cover bg-center"></div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-              Get in Touch
-            </h1>
-            <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
-              Have questions about our vehicles, financing options, or services?
-              Our team is here to help you find the perfect driving experience.
-            </p>
-          </div>
+    <div className="bg-white min-h-screen">
+      {/* ── Hero ──────────────────────────────────────────────────── */}
+      <section className="bg-gray-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+          <p className="text-xs font-medium tracking-widest text-gray-400 uppercase mb-4">
+            AutoElite
+          </p>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+            Get in Touch
+          </h1>
+          <p className="text-gray-400 max-w-lg leading-relaxed">
+            Questions about inventory, financing, or services? Our team is ready
+            to help.
+          </p>
         </div>
       </section>
 
-      {/* Contact Info Grid */}
-      <section className="py-16 bg-white">
+      {/* ── Contact Info Cards ────────────────────────────────────── */}
+      <section className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
             {contactInfo.map((item, index) => {
               const Icon = item.icon;
               return (
-                <div
-                  key={index}
-                  className="group p-6 bg-gray-50 rounded-md hover:shadow-sm transition-all duration-300 hover:-translate-y-0.2"
-                >
-                  <div className="w-12 h-12 bg-gray-900 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gray-800 transition-colors">
-                    <Icon className="h-6 w-6 text-white" />
+                <div key={index} className="py-8 px-6 lg:px-8">
+                  <div className="flex items-center gap-2.5 mb-4">
+                    <Icon className="h-4 w-4 text-gray-400" />
+                    <span className="text-xs font-medium tracking-widest text-gray-400 uppercase">
+                      {item.title}
+                    </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                    {item.title}
-                  </h3>
                   <div className="space-y-1 mb-4">
                     {item.details.map((detail, idx) => (
-                      <p
-                        key={idx}
-                        className="text-sm text-gray-600 leading-relaxed"
-                      >
+                      <p key={idx} className="text-sm text-gray-700">
                         {detail}
                       </p>
                     ))}
                   </div>
-                  {item.action && (
+                  {item.action && item.href && (
                     <a
                       href={item.href}
-                      className="inline-flex items-center text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors group/link"
+                      className="text-xs font-medium text-gray-900 underline underline-offset-4 hover:text-gray-500 transition-colors"
                     >
-                      {item.action}
-                      <span className="ml-1 group-hover/link:translate-x-1 transition-transform">
-                        →
-                      </span>
+                      {item.action} →
                     </a>
                   )}
                 </div>
@@ -211,44 +219,70 @@ const ContactPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Contact Form & Map Section */}
+      {/* ── Form + Sidebar ────────────────────────────────────────── */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Contact Form */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  Send Us a Message
-                </h2>
-                <p className="text-gray-600">
-                  Fill out the form below and we'll get back to you within 24
-                  hours.
-                </p>
-              </div>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
+            {/* Form – takes 3 cols */}
+            <div className="lg:col-span-3 bg-white border border-gray-200 p-8">
+              <h2 className="text-xl font-bold text-gray-900 mb-1">
+                Send a Message
+              </h2>
+              <p className="text-sm text-gray-500 mb-8">
+                We'll respond within one business day.
+              </p>
 
-              {isSubmitted ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                    <CheckCircle className="h-8 w-8 text-green-600" />
+              {/* ── Success state ── */}
+              {submitState === "success" && (
+                <div className="flex flex-col items-center py-16 text-center">
+                  <div className="w-14 h-14 bg-gray-900 flex items-center justify-center mb-5">
+                    <CheckCircle className="h-7 w-7 text-white" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    Message Sent Successfully!
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Message Received
                   </h3>
-                  <p className="text-gray-600">
-                    Thank you for contacting us. We'll respond shortly.
+                  <p className="text-sm text-gray-500 mb-6 max-w-xs">
+                    Thank you for reaching out. A member of our team will be in
+                    touch shortly.
                   </p>
+                  <button
+                    onClick={resetForm}
+                    className="text-xs font-medium text-gray-900 underline underline-offset-4 hover:text-gray-500 transition-colors"
+                  >
+                    Send another message
+                  </button>
                 </div>
-              ) : (
+              )}
+
+              {/* ── Error banner ── */}
+              {submitState === "error" && (
+                <div className="flex items-start gap-3 bg-red-50 border border-red-200 p-4 mb-6">
+                  <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-red-700">
+                      Failed to send
+                    </p>
+                    <p className="text-sm text-red-600 mt-0.5">
+                      {errorMessage}
+                    </p>
+                    <button
+                      onClick={resetForm}
+                      className="text-xs font-medium text-red-700 underline underline-offset-2 mt-2 hover:text-red-500"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Form ── */}
+              {submitState !== "success" && (
                 <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
-                      <label
-                        htmlFor="name"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Full Name *
-                      </label>
+                      <Label htmlFor="name" required>
+                        Full Name
+                      </Label>
                       <input
                         type="text"
                         id="name"
@@ -256,17 +290,14 @@ const ContactPage: React.FC = () => {
                         value={formData.name}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-colors"
                         placeholder="John Doe"
+                        className={inputClass}
                       />
                     </div>
                     <div>
-                      <label
-                        htmlFor="email"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Email Address *
-                      </label>
+                      <Label htmlFor="email" required>
+                        Email
+                      </Label>
                       <input
                         type="email"
                         id="email"
@@ -274,44 +305,36 @@ const ContactPage: React.FC = () => {
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-colors"
                         placeholder="john@example.com"
+                        className={inputClass}
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
-                      <label
-                        htmlFor="phone"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Phone Number
-                      </label>
+                      <Label htmlFor="phone">Phone</Label>
                       <input
                         type="tel"
                         id="phone"
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-colors"
                         placeholder="(555) 123-4567"
+                        className={inputClass}
                       />
                     </div>
                     <div>
-                      <label
-                        htmlFor="subject"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Subject *
-                      </label>
+                      <Label htmlFor="subject" required>
+                        Subject
+                      </Label>
                       <select
                         id="subject"
                         name="subject"
                         value={formData.subject}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-colors bg-white"
+                        className={inputClass}
                       >
                         <option value="">Select a subject</option>
                         <option value="sales">Sales Inquiry</option>
@@ -324,45 +347,35 @@ const ContactPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="preferredContact"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
+                    <Label htmlFor="preferred_contact">
                       Preferred Contact Method
-                    </label>
-                    <div className="flex gap-4">
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          name="preferredContact"
-                          value="email"
-                          checked={formData.preferredContact === "email"}
-                          onChange={handleChange}
-                          className="mr-2 text-gray-900 focus:ring-gray-900"
-                        />
-                        <span className="text-sm text-gray-700">Email</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          name="preferredContact"
-                          value="phone"
-                          checked={formData.preferredContact === "phone"}
-                          onChange={handleChange}
-                          className="mr-2 text-gray-900 focus:ring-gray-900"
-                        />
-                        <span className="text-sm text-gray-700">Phone</span>
-                      </label>
+                    </Label>
+                    <div className="flex gap-6">
+                      {(["email", "phone"] as const).map((opt) => (
+                        <label
+                          key={opt}
+                          className="flex items-center gap-2 cursor-pointer"
+                        >
+                          <input
+                            type="radio"
+                            name="preferred_contact"
+                            value={opt}
+                            checked={formData.preferred_contact === opt}
+                            onChange={handleChange}
+                            className="accent-gray-900"
+                          />
+                          <span className="text-sm text-gray-700 capitalize">
+                            {opt}
+                          </span>
+                        </label>
+                      ))}
                     </div>
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="message"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Message *
-                    </label>
+                    <Label htmlFor="message" required>
+                      Message
+                    </Label>
                     <textarea
                       id="message"
                       name="message"
@@ -370,20 +383,22 @@ const ContactPage: React.FC = () => {
                       value={formData.message}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-colors resize-none"
                       placeholder="Tell us how we can help you..."
-                    ></textarea>
+                      className={`${inputClass} resize-none`}
+                    />
                   </div>
 
                   <button
                     type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    disabled={submitState === "submitting"}
+                    className="w-full py-3 bg-gray-900 text-white text-sm font-medium
+                               hover:bg-gray-700 transition-colors disabled:opacity-60
+                               disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    {isSubmitting ? (
+                    {submitState === "submitting" ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Sending...
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Sending…
                       </>
                     ) : (
                       <>
@@ -396,11 +411,11 @@ const ContactPage: React.FC = () => {
               )}
             </div>
 
-            {/* Map & Additional Info */}
-            <div className="space-y-8">
+            {/* Sidebar – takes 2 cols */}
+            <div className="lg:col-span-2 space-y-6">
               {/* Map */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="h-64 bg-gray-200 relative">
+              <div className="bg-white border border-gray-200 overflow-hidden">
+                <div className="h-56 bg-gray-100">
                   <iframe
                     title="Dealership Location"
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1x3305.594563568457!2d-118.24674278478624!3d34.05410568060417!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80c2c75ddc27da13%3A0xe22fdf6f254608f4!2sLos%20Angeles%2C%20CA%2C%20USA!5e0!3m2!1sen!2s!4v1699999999999!5m2!1sen!2s"
@@ -409,52 +424,51 @@ const ContactPage: React.FC = () => {
                     style={{ border: 0 }}
                     allowFullScreen
                     loading="lazy"
-                    className="grayscale hover:grayscale-0 transition-all duration-300"
-                  ></iframe>
+                    className="grayscale hover:grayscale-0 transition-all duration-500"
+                  />
                 </div>
-                <div className="p-5 border-t border-gray-100">
+                <div className="px-5 py-4 border-t border-gray-100">
                   <a
                     href="https://maps.google.com/?q=123+Auto+Avenue+Los+Angeles+CA"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors"
+                    className="inline-flex items-center gap-2 text-sm font-medium text-gray-900 hover:text-gray-500 transition-colors"
                   >
-                    <Navigation className="h-4 w-4" />
-                    Get Directions to Our Dealership
+                    <Navigation className="h-3.5 w-3.5" />
+                    Get Directions
                   </a>
                 </div>
               </div>
 
-              {/* Quick Actions */}
-              <div className="bg-gray-900 rounded-2xl p-6 text-white">
-                <div className="flex items-start gap-4 mb-4">
-                  <Calendar className="h-8 w-8 text-gray-400 flex-shrink-0" />
+              {/* Test Drive CTA */}
+              <div className="bg-gray-900 p-6 text-white">
+                <div className="flex items-start gap-4">
+                  <Calendar className="h-5 w-5 text-gray-400 mt-0.5 shrink-0" />
                   <div>
-                    <h3 className="text-lg font-semibold mb-1">
+                    <h3 className="font-semibold mb-1">
                       Schedule a Test Drive
                     </h3>
-                    <p className="text-gray-400 text-sm mb-3">
-                      Experience your dream car before making a decision. Book
-                      your test drive online.
+                    <p className="text-sm text-gray-400 mb-4 leading-relaxed">
+                      Experience your next car before committing. Slots
+                      available 7 days a week.
                     </p>
-                    <button className="inline-flex items-center text-sm font-medium text-white border border-white/30 hover:bg-white hover:text-gray-900 px-4 py-2 rounded-lg transition-all">
-                      Book Now
-                      <span className="ml-2">→</span>
+                    <button
+                      onClick={() => navigate("/schedule-test-drive")}
+                      className="text-sm font-medium border border-white/30 px-4 py-2
+                       hover:bg-white hover:text-gray-900 transition-all"
+                    >
+                      Book Now →
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* Social Links */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Connect With Us
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Follow us on social media for the latest inventory updates,
-                  special offers, and more.
+              {/* Social */}
+              <div className="bg-white border border-gray-200 p-6">
+                <p className="text-xs font-medium tracking-widest text-gray-400 uppercase mb-4">
+                  Follow Us
                 </p>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-2">
                   {socialLinks.map((social) => {
                     const Icon = social.icon;
                     return (
@@ -463,10 +477,13 @@ const ContactPage: React.FC = () => {
                         href={social.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`p-3 bg-gray-100 rounded-xl hover:text-white ${social.color} transition-all duration-300 hover:-translate-y-1`}
                         aria-label={social.label}
+                        className="flex items-center gap-2 px-3 py-2 border border-gray-200 text-xs
+                                   font-medium text-gray-600 hover:border-gray-900 hover:text-gray-900
+                                   transition-colors"
                       >
-                        <Icon className="h-5 w-5" />
+                        <Icon className="h-3.5 w-3.5" />
+                        {social.label}
                       </a>
                     );
                   })}
@@ -477,55 +494,42 @@ const ContactPage: React.FC = () => {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="py-16 bg-white">
+      {/* ── FAQ ───────────────────────────────────────────────────── */}
+      <section className="py-16 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Find quick answers to common questions about our dealership and
-              services.
+          <div className="max-w-4xl mx-auto">
+            <p className="text-xs font-medium tracking-widest text-gray-400 uppercase mb-2">
+              FAQ
             </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="space-y-2">
-              <h3 className="font-semibold text-gray-900">
-                Do I need an appointment for a test drive?
-              </h3>
-              <p className="text-sm text-gray-600">
-                While walk-ins are welcome, we recommend scheduling an
-                appointment to ensure your preferred vehicle is available.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-semibold text-gray-900">
-                What financing options are available?
-              </h3>
-              <p className="text-sm text-gray-600">
-                We offer various financing options through our partner lenders.
-                Contact our finance department for personalized assistance.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-semibold text-gray-900">
-                Do you offer trade-in evaluations?
-              </h3>
-              <p className="text-sm text-gray-600">
-                Yes, we provide free trade-in evaluations. You can get an
-                instant online estimate or visit our dealership.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-semibold text-gray-900">
-                What's your service department hours?
-              </h3>
-              <p className="text-sm text-gray-600">
-                Our service department is open Monday-Friday 8 AM-6 PM and
-                Saturday 9 AM-4 PM. Closed Sundays.
-              </p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-10">
+              Common Questions
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+              {[
+                {
+                  q: "Do I need an appointment for a test drive?",
+                  a: "Walk-ins are welcome, but booking ahead ensures your preferred vehicle is available and ready.",
+                },
+                {
+                  q: "What financing options are available?",
+                  a: "We work with multiple lenders to offer competitive rates. Our finance team can walk you through all options.",
+                },
+                {
+                  q: "Do you offer trade-in evaluations?",
+                  a: "Yes — free trade-in appraisals are available online or in person. Most take under 30 minutes.",
+                },
+                {
+                  q: "What are the service department hours?",
+                  a: "Mon–Fri 8 AM–6 PM and Saturday 9 AM–4 PM. We're closed Sundays.",
+                },
+              ].map(({ q, a }) => (
+                <div key={q}>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-1.5">
+                    {q}
+                  </h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{a}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>

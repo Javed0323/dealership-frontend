@@ -23,11 +23,10 @@ const PrivacyPolicy: React.FC = () => {
               Introduction
             </h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              At Auto Elite Motors ("we," "our," or "us"), we respect your
-              privacy and are committed to protecting your personal information.
-              This Privacy Policy explains how we collect, use, disclose, and
-              safeguard your information when you visit our website or interact
-              with our dealership.
+              At Auto Elite Motors, we respect your privacy and are committed to
+              protecting your personal information. This Privacy Policy explains
+              how we collect, use, disclose, and safeguard your information when
+              you visit our website or interact with our dealership.
             </p>
             <p className="text-gray-700 leading-relaxed">
               Please read this privacy policy carefully. If you do not agree

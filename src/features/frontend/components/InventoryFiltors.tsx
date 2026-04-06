@@ -1,4 +1,4 @@
-// features/inventory/components/InventoryFilters.tsx
+// features/components/InventoryFilters.tsx
 
 import { useMemo } from "react";
 import type { Inventory } from "@/features/inventory/types";
@@ -29,6 +29,7 @@ export interface InventoryWithCar {
 interface InventoryFiltersProps {
   data: InventoryWithCar[];
   filters: InventoryFilterParams;
+  appliedFilterCount: number; // count from parent's appliedFilters, not pendingFilters
   onFilterChange: (filters: InventoryFilterParams) => void;
   onApply: () => void;
   onReset: () => void;
@@ -62,12 +63,14 @@ function RangeInput({
   step?: number;
 }) {
   return (
-    <div className="space-y-2">
-      <label className="text-xs font-medium text-gray-700">{label}</label>
+    <div className="space-y-1.5">
+      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+        {label}
+      </label>
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           {prefix && (
-            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">
               {prefix}
             </span>
           )}
@@ -77,13 +80,15 @@ function RangeInput({
             value={values.min}
             step={step}
             onChange={(e) => onChange(minKey, e.target.value)}
-            className={`w-full border border-gray-200 rounded-md bg-white text-sm text-gray-900 py-1.5 pr-2 outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all ${prefix ? "pl-6" : "pl-2.5"}`}
+            className={`w-full border border-gray-200 bg-white text-sm text-gray-900 py-1.5 pr-2 outline-none focus:border-gray-500 transition-colors ${
+              prefix ? "pl-6" : "pl-2.5"
+            }`}
           />
         </div>
-        <span className="text-gray-300 text-xs">—</span>
+        <span className="text-gray-300 text-xs shrink-0">—</span>
         <div className="relative flex-1">
           {prefix && (
-            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">
               {prefix}
             </span>
           )}
@@ -93,7 +98,9 @@ function RangeInput({
             value={values.max}
             step={step}
             onChange={(e) => onChange(maxKey, e.target.value)}
-            className={`w-full border border-gray-200 rounded-md bg-white text-sm text-gray-900 py-1.5 pr-2 outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all ${prefix ? "pl-6" : "pl-2.5"}`}
+            className={`w-full border border-gray-200 bg-white text-sm text-gray-900 py-1.5 pr-2 outline-none focus:border-gray-500 transition-colors ${
+              prefix ? "pl-6" : suffix ? "pl-2.5 pr-10" : "pl-2.5"
+            }`}
           />
           {suffix && (
             <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">
@@ -124,14 +131,16 @@ function SelectInput({
   disabled?: boolean;
 }) {
   return (
-    <div className="space-y-2">
-      <label className="text-xs font-medium text-gray-700">{label}</label>
+    <div className="space-y-1.5">
+      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+        {label}
+      </label>
       <div className="relative">
         <select
           value={value}
           onChange={(e) => onChange(paramKey, e.target.value)}
           disabled={disabled}
-          className="w-full border border-gray-200 rounded-md bg-white text-sm text-gray-900 py-1.5 pl-2.5 pr-7 outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all appearance-none cursor-pointer disabled:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-400"
+          className="w-full border border-gray-200 bg-white text-sm text-gray-900 py-1.5 pl-2.5 pr-7 outline-none focus:border-gray-500 transition-colors appearance-none cursor-pointer disabled:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-400"
         >
           <option value="">{placeholder}</option>
           {options.map((opt) => (
@@ -142,8 +151,8 @@ function SelectInput({
         </select>
         <svg
           className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400"
-          width="12"
-          height="12"
+          width="11"
+          height="11"
           viewBox="0 0 12 12"
           fill="none"
         >
@@ -163,29 +172,28 @@ function SelectInput({
 export default function InventoryFilters({
   data,
   filters,
+  appliedFilterCount,
   onFilterChange,
   onApply,
   onReset,
   resultCount,
   hasActiveFilters,
 }: InventoryFiltersProps) {
-  // Helper to update a single filter
   const updateFilter = (key: keyof InventoryFilterParams, value: string) => {
     if (value === "" || value == null) {
-      // Remove the filter
       const { [key]: _, ...rest } = filters;
-      onFilterChange(rest);
 
       // If clearing make, also clear model
       if (key === "make") {
         const { model, ...restWithoutModel } = rest as InventoryFilterParams;
         onFilterChange(restWithoutModel);
+      } else {
+        onFilterChange(rest);
       }
     } else {
-      // Add or update filter
       const newFilters = { ...filters, [key]: value };
 
-      // If setting make, clear model
+      // If setting a new make, clear any previously selected model
       if (key === "make") {
         const { model, ...rest } = newFilters;
         onFilterChange(rest);
@@ -195,12 +203,12 @@ export default function InventoryFilters({
     }
   };
 
-  // Derive dynamic options from the full dataset
   const options = useMemo(() => {
     const makes = unique(data.map((d) => d.car.make ?? "").filter(Boolean));
     const models = unique(data.map((d) => d.car.model ?? "").filter(Boolean));
     const bodyTypes = unique(
-      data.map((d) => d.car.category ?? d.car.category ?? "").filter(Boolean),
+      // Fix: was `d.car.category ?? d.car.category` (same field twice)
+      data.map((d) => d.car.segment ?? d.car.category ?? "").filter(Boolean),
     );
     const fuelTypes = unique(
       data.map((d) => d.car.engine?.fuel_type ?? "").filter(Boolean),
@@ -213,45 +221,35 @@ export default function InventoryFilters({
     return { makes, models, bodyTypes, fuelTypes, transmissions, conditions };
   }, [data]);
 
-  // Filter models based on selected make
   const filteredModels = useMemo(() => {
-    const selectedMake = filters.make;
-    if (!selectedMake) return options.models;
-
-    const modelsForMake = unique(
+    if (!filters.make) return options.models;
+    return unique(
       data
-        .filter((d) => d.car.make === selectedMake)
+        .filter((d) => d.car.make === filters.make)
         .map((d) => d.car.model ?? "")
         .filter(Boolean),
     );
-
-    return modelsForMake;
   }, [data, filters.make, options.models]);
 
-  const activeFilterCount = Object.keys(filters).length;
-
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <div className="p-4 border-b border-gray-200 bg-gray-50">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900">Filters</h3>
-            {resultCount !== undefined && (
-              <p className="text-xs text-gray-500 mt-0.5">
-                {resultCount} results
-              </p>
-            )}
-          </div>
-          {activeFilterCount > 0 && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
-              {activeFilterCount} active
+    <div className="bg-white border border-gray-200 overflow-hidden">
+      {/* Header — plain border, no background tint */}
+      <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-gray-900">Filters</span>
+          {appliedFilterCount > 0 && (
+            <span className="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-gray-900 text-white">
+              {appliedFilterCount}
             </span>
           )}
         </div>
+        {resultCount !== undefined && (
+          <span className="text-xs text-gray-400">{resultCount} results</span>
+        )}
       </div>
 
-      <div className="p-4 space-y-5">
-        {/* Make */}
+      <div className="p-4 space-y-4">
+        {/* Make / Model */}
         <SelectInput
           label="Make"
           paramKey="make"
@@ -262,8 +260,6 @@ export default function InventoryFilters({
           }
           placeholder="All makes"
         />
-
-        {/* Model */}
         <SelectInput
           label="Model"
           paramKey="model"
@@ -278,9 +274,9 @@ export default function InventoryFilters({
 
         <div className="h-px bg-gray-100" />
 
-        {/* Price */}
+        {/* Price / Year / Mileage */}
         <RangeInput
-          label="Price Range"
+          label="Price"
           minKey="selling_price__gte"
           maxKey="selling_price__lte"
           values={{
@@ -293,8 +289,6 @@ export default function InventoryFilters({
           prefix="$"
           step={1000}
         />
-
-        {/* Year */}
         <RangeInput
           label="Year"
           minKey="year__gte"
@@ -308,8 +302,6 @@ export default function InventoryFilters({
           }
           step={1}
         />
-
-        {/* Mileage */}
         <RangeInput
           label="Mileage"
           minKey="mileage_km__gte"
@@ -327,7 +319,7 @@ export default function InventoryFilters({
 
         <div className="h-px bg-gray-100" />
 
-        {/* Condition */}
+        {/* Condition / Body / Fuel / Transmission */}
         <SelectInput
           label="Condition"
           paramKey="condition"
@@ -337,8 +329,6 @@ export default function InventoryFilters({
             updateFilter(key as keyof InventoryFilterParams, val)
           }
         />
-
-        {/* Body Type */}
         <SelectInput
           label="Body Type"
           paramKey="body_type"
@@ -348,8 +338,6 @@ export default function InventoryFilters({
             updateFilter(key as keyof InventoryFilterParams, val)
           }
         />
-
-        {/* Fuel Type */}
         <SelectInput
           label="Fuel Type"
           paramKey="fuel_type"
@@ -359,8 +347,6 @@ export default function InventoryFilters({
             updateFilter(key as keyof InventoryFilterParams, val)
           }
         />
-
-        {/* Transmission */}
         <SelectInput
           label="Transmission"
           paramKey="transmission_type"
@@ -371,18 +357,18 @@ export default function InventoryFilters({
           }
         />
 
-        {/* Action Buttons */}
-        <div className="pt-2 space-y-2">
+        {/* Action buttons */}
+        <div className="pt-1 space-y-2">
           <button
             onClick={onApply}
-            className="w-full bg-gray-900 text-white text-sm font-medium py-2 rounded-md hover:bg-gray-800 transition-colors"
+            className="w-full bg-gray-900 text-white text-sm font-medium py-2 hover:bg-gray-800 transition-colors"
           >
             Apply Filters
           </button>
           {hasActiveFilters && (
             <button
               onClick={onReset}
-              className="w-full border border-gray-200 text-sm font-medium text-gray-600 py-2 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
+              className="w-full border border-gray-200 text-sm font-medium text-gray-600 py-2 hover:bg-gray-50 hover:text-gray-900 transition-colors"
             >
               Reset all
             </button>

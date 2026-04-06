@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { User, Car, Phone, Mail, CheckCircle, X } from "lucide-react";
+import { User, Phone, Mail, CheckCircle, X } from "lucide-react";
 import type { TestDrive } from "@/features/test_drives/types";
 
 interface TestDriveFormData {
@@ -10,8 +10,6 @@ interface TestDriveFormData {
   inventory_id: number;
   scheduled_at: string;
   notes?: string;
-  preferred_contact?: "email" | "sms" | "phone";
-  receive_updates?: boolean;
 }
 
 interface BookTestDriveProps {
@@ -50,7 +48,6 @@ const BookTestDrive: React.FC<BookTestDriveProps> = ({
     return () => setMounted(false);
   }, []);
 
-  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -60,22 +57,16 @@ const BookTestDrive: React.FC<BookTestDriveProps> = ({
         onClose();
       }
     };
-
-    // Handle escape key
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
+      if (event.key === "Escape") onClose();
     };
 
     if (!submitted) {
       document.addEventListener("mousedown", handleClickOutside);
       document.addEventListener("keydown", handleEscape);
-      // Prevent body scroll when modal is open
-      document.body.style.overflow = "hidden";
-      // Add padding to prevent layout shift
       const scrollbarWidth =
         window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = "hidden";
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
 
@@ -90,35 +81,23 @@ const BookTestDrive: React.FC<BookTestDriveProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Partial<TestDriveFormData> = {};
 
-    if (!formData.full_name.trim()) {
-      newErrors.full_name = "Please enter your full name";
-    } else if (formData.full_name.length < 2) {
+    if (!formData.full_name.trim())
+      newErrors.full_name = "Full name is required";
+    else if (formData.full_name.length < 2)
       newErrors.full_name = "Name must be at least 2 characters";
-    }
 
-    if (!formData.email) {
-      newErrors.email = "Email address is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
+    if (!formData.email) newErrors.email = "Email address is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      newErrors.email = "Enter a valid email address";
 
-    if (!formData.phone) {
-      newErrors.phone = "Phone number is required";
-    } else if (!/^[\d\s\-+()]{10,15}$/.test(formData.phone)) {
-      newErrors.phone = "Please enter a valid phone number";
-    }
+    if (!formData.phone) newErrors.phone = "Phone number is required";
+    else if (!/^[\d\s\-+()]{10,15}$/.test(formData.phone))
+      newErrors.phone = "Enter a valid phone number";
 
     if (!formData.scheduled_at) {
       newErrors.scheduled_at = "Please select a date and time";
-    } else {
-      const selectedDate = new Date(formData.scheduled_at);
-      const now = new Date();
-      const minDate = new Date();
-      minDate.setHours(0, 0, 0, 0);
-
-      if (selectedDate < now) {
-        newErrors.scheduled_at = "Please select a future date and time";
-      }
+    } else if (new Date(formData.scheduled_at) < new Date()) {
+      newErrors.scheduled_at = "Please select a future date and time";
     }
 
     setErrors(newErrors);
@@ -127,9 +106,7 @@ const BookTestDrive: React.FC<BookTestDriveProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validateForm()) return;
-
     try {
       await onSubmit(formData);
       setSubmitted(true);
@@ -145,13 +122,10 @@ const BookTestDrive: React.FC<BookTestDriveProps> = ({
   ) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
-
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
-
-    // Clear error when user starts typing
     if (errors[name as keyof TestDriveFormData]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
@@ -159,223 +133,227 @@ const BookTestDrive: React.FC<BookTestDriveProps> = ({
 
   const minDateTime = () => {
     const now = new Date();
-    now.setHours(now.getHours() + 2); // Minimum 2 hours notice
+    now.setHours(now.getHours() + 2);
     return now.toISOString().slice(0, 16);
   };
 
+  // Shared input class helpers
+  const inputBase =
+    "w-full border bg-white text-sm text-gray-900 py-2.5 outline-none transition-colors focus:border-gray-900 placeholder:text-gray-400";
+  const inputError = "border-red-400 bg-red-50";
+  const inputNormal = "border-gray-200";
+
   const modalContent = (
     <div
-      className="fixed inset-0 z-9999 flex items-center justify-center p-4"
-      style={{
-        isolation: "isolate",
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-      }}
+      className="fixed inset-0 z-9999 flex items-center justify-center p-4 backdrop-blur-sm"
+      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
     >
-      {/* Backdrop with blur effect */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-        style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
-      />
-
-      {/* Modal Container */}
       <div
         ref={modalRef}
-        className="relative bg-white rounded-md shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-        style={{ position: "relative", zIndex: 10000 }}
+        className="relative bg-white w-full max-w-xl max-h-[92vh] overflow-y-auto flex flex-col"
+        style={{ boxShadow: "0 25px 60px rgba(0,0,0,0.25)" }}
       >
-        {/* Success Screen */}
         {submitted ? (
-          <div className="p-6 text-center">
-            <div className="flex justify-center mb-4">
-              <CheckCircle className="w-16 h-16 text-green-500" />
+          /* ── Success Screen ───────────────────────────────── */
+          <div className="flex flex-col items-center justify-center p-10 text-center gap-4">
+            <div className="w-14 h-14 bg-gray-900 flex items-center justify-center mb-2">
+              <CheckCircle className="w-7 h-7 text-white" />
             </div>
-            <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-              Booking Confirmed!
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Thank you, {formData.full_name.split(" ")[0]}! We've sent a
-              confirmation to {formData.email}
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 tracking-tight">
+                Booking Confirmed
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                We'll send a confirmation to{" "}
+                <span className="text-gray-700 font-medium">
+                  {formData.email}
+                </span>
+              </p>
+            </div>
+
+            <div className="w-full border border-gray-100 p-4 text-left space-y-1.5 mt-2">
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">
+                Booking Details
+              </p>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Vehicle</span>
+                <span className="text-gray-900 font-medium">
+                  {inventoryName}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Date & Time</span>
+                <span className="text-gray-900 font-medium">
+                  {new Date(formData.scheduled_at).toLocaleString(undefined, {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Name</span>
+                <span className="text-gray-900 font-medium">
+                  {formData.full_name}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-400">
+              A reminder will be sent 24 hours before your appointment.
             </p>
-            <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-              <p className="text-sm font-medium text-gray-700">
-                Test Drive Details:
-              </p>
-              <p className="text-sm text-gray-600 mt-1">🚗 {inventoryName}</p>
-              <p className="text-sm text-gray-600">
-                📅 {new Date(formData.scheduled_at).toLocaleString()}
-              </p>
-              <p className="text-sm text-gray-600 mt-2">
-                We'll send a reminder 24 hours before your appointment.
-              </p>
-            </div>
+
             <button
               onClick={onClose}
-              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              className="w-full bg-gray-900 text-white text-sm font-medium py-3 hover:bg-gray-800 transition-colors mt-2"
             >
               Done
             </button>
           </div>
         ) : (
           <>
-            {/* Header */}
-            <div className="sticky top-0 bg-white border-b border-gray-100 p-6 z-10">
-              <div className="flex items-center justify-between">
+            {/* ── Header ────────────────────────────────────── */}
+            <div className="sticky top-0 bg-white z-10 border-b border-gray-100">
+              {/* Black accent bar */}
+              <div className="h-1 w-full bg-gray-900" />
+              <div className="flex items-start justify-between px-6 py-4">
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">
+                  <h2 className="text-lg font-semibold text-gray-900 tracking-tight">
                     Book a Test Drive
                   </h2>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Experience the drive, no account needed
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    No account needed — takes under a minute
                   </p>
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-1.5 hover:bg-gray-100 transition-colors mt-0.5"
                 >
-                  <X className="w-5 h-5 text-gray-400" />
+                  <X className="w-4 h-4 text-gray-500" />
                 </button>
               </div>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
-              {/* Vehicle Display */}
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <Car className="w-5 h-5 text-gray-400 shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-700">
-                    {inventoryName}
+            {/* ── Form ──────────────────────────────────────── */}
+            <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
+              {/* Vehicle tag */}
+              <div className="flex items-center gap-3 border border-gray-100 bg-gray-50 px-4 py-3">
+                <div className="w-1 h-8 bg-gray-900 shrink-0" />
+                <div>
+                  <p className="text-xs text-gray-400 uppercase tracking-wide">
+                    Vehicle
                   </p>
-                  <p className="text-xs text-gray-500">
-                    Select your preferred time below
+                  <p className="text-sm font-medium text-gray-900">
+                    {inventoryName}
                   </p>
                 </div>
               </div>
 
-              {/* Customer Information */}
+              {/* ── Section: Your Information ── */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-700">
+                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">
                   Your Information
-                </h3>
+                </p>
 
-                {/* Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name *
+                {/* Full Name */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-700">
+                    Full Name <span className="text-gray-400">*</span>
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                     <input
                       type="text"
                       name="full_name"
                       value={formData.full_name}
                       onChange={handleInputChange}
                       placeholder="John Doe"
-                      className={`w-full pl-9 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.full_name
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-200"
-                      }`}
+                      className={`${inputBase} pl-9 pr-3 ${errors.full_name ? inputError : inputNormal}`}
                     />
                   </div>
                   {errors.full_name && (
-                    <p className="text-xs text-red-500 mt-1">
-                      {errors.full_name}
-                    </p>
+                    <p className="text-xs text-red-500">{errors.full_name}</p>
                   )}
                 </div>
 
                 {/* Email */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address *
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-700">
+                    Email Address <span className="text-gray-400">*</span>
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
                       placeholder="john@example.com"
-                      className={`w-full pl-9 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.email
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-200"
-                      }`}
+                      className={`${inputBase} pl-9 pr-3 ${errors.email ? inputError : inputNormal}`}
                     />
                   </div>
                   {errors.email && (
-                    <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+                    <p className="text-xs text-red-500">{errors.email}</p>
                   )}
-                  <p className="text-xs text-gray-400 mt-1">
-                    We'll send confirmation and reminders here
-                  </p>
                 </div>
 
                 {/* Phone */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number *
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-700">
+                    Phone Number <span className="text-gray-400">*</span>
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                     <input
                       type="tel"
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
                       placeholder="(555) 123-4567"
-                      className={`w-full pl-9 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.phone
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-200"
-                      }`}
+                      className={`${inputBase} pl-9 pr-3 ${errors.phone ? inputError : inputNormal}`}
                     />
                   </div>
                   {errors.phone && (
-                    <p className="text-xs text-red-500 mt-1">{errors.phone}</p>
+                    <p className="text-xs text-red-500">{errors.phone}</p>
                   )}
                 </div>
               </div>
 
-              {/* Date & Time */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Preferred Date & Time *
-                </label>
-                <input
-                  type="datetime-local"
-                  name="scheduled_at"
-                  value={formData.scheduled_at}
-                  onChange={handleInputChange}
-                  min={minDateTime()}
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.scheduled_at
-                      ? "border-red-300 bg-red-50"
-                      : "border-gray-200"
-                  }`}
-                />
-                {errors.scheduled_at && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.scheduled_at}
-                  </p>
-                )}
-                <p className="text-xs text-gray-400 mt-2">
-                  Available Monday-Saturday, 9:00 AM - 6:00 PM
+              {/* ── Section: Scheduling ── */}
+              <div className="space-y-4">
+                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">
+                  Scheduling
                 </p>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-700">
+                    Preferred Date & Time{" "}
+                    <span className="text-gray-400">*</span>
+                  </label>
+                  <input
+                    type="datetime-local"
+                    name="scheduled_at"
+                    value={formData.scheduled_at}
+                    onChange={handleInputChange}
+                    min={minDateTime()}
+                    className={`${inputBase} px-3 ${errors.scheduled_at ? inputError : inputNormal}`}
+                  />
+                  {errors.scheduled_at ? (
+                    <p className="text-xs text-red-500">
+                      {errors.scheduled_at}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-400">
+                      Mon – Sat, 9:00 AM – 6:00 PM · Minimum 2 hours notice
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* Notes */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Special Requests (Optional)
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-gray-700">
+                  Special Requests{" "}
+                  <span className="text-gray-400 font-normal">(optional)</span>
                 </label>
                 <textarea
                   name="notes"
@@ -384,33 +362,34 @@ const BookTestDrive: React.FC<BookTestDriveProps> = ({
                   rows={3}
                   maxLength={255}
                   placeholder="Any specific questions or requirements..."
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className={`${inputBase} px-3 resize-none`}
+                  style={{ borderColor: "#e5e7eb" }}
                 />
-                <div className="text-right text-xs text-gray-400 mt-1">
-                  {formData.notes?.length || 0}/255
-                </div>
+                <p className="text-right text-xs text-gray-300">
+                  {formData.notes?.length ?? 0}/255
+                </p>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-3 pt-4">
+              {/* ── Actions ── */}
+              <div className="flex gap-2 pt-1">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  className="flex-1 border border-gray-200 text-sm font-medium text-gray-600 py-2.5 hover:bg-gray-50 hover:text-gray-900 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-2 px-6 bg-gray-900 text-white text-sm font-medium py-2.5 hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? "Booking..." : "Confirm Booking"}
+                  {isLoading ? "Booking…" : "Confirm Booking"}
                 </button>
               </div>
 
-              <p className="text-xs text-center text-gray-400 pt-2">
-                By confirming, you agree to our test drive terms and conditions
+              <p className="text-xs text-center text-gray-300 pb-1">
+                By confirming you agree to our test drive terms & conditions
               </p>
             </form>
           </>
@@ -419,7 +398,6 @@ const BookTestDrive: React.FC<BookTestDriveProps> = ({
     </div>
   );
 
-  // Use portal to render at body level
   if (!mounted) return null;
   return createPortal(modalContent, document.body);
 };

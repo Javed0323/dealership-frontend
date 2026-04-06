@@ -1,6 +1,6 @@
 // features/inventory/InventoryPage.tsx
 
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useState } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -52,16 +52,14 @@ export default function InventoryPage() {
   const [filterModel, setFilterModel] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
-  // Debounce search input to avoid too many API calls
-  const debouncedSearch = useDebounce(search, 500);
+  // Debounce search — this drives the query directly, no Apply needed
+  const debouncedSearch = useDebounce(search, 400);
 
   const offset = Number(searchParams.get("offset") ?? 0);
   const sort = searchParams.get("sort") ?? undefined;
 
-  // Apply filters - called when user clicks "Apply Filters"
   const applyFilters = useCallback(() => {
     setAppliedFilters(pendingFilters);
-    // Reset offset when applying new filters
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       next.delete("offset");
@@ -69,19 +67,18 @@ export default function InventoryPage() {
     });
   }, [pendingFilters, setSearchParams]);
 
-  // Reset all filters
   const resetFilters = useCallback(() => {
     setPendingFilters({});
     setAppliedFilters({});
     setSearchParams((prev) => {
       const next = new URLSearchParams();
-      // Keep sort if needed
       if (prev.has("sort")) next.set("sort", prev.get("sort")!);
       return next;
     });
   }, [setSearchParams]);
 
-  // Build query params for the API call
+  // Build query params — debouncedSearch is included directly so React Query
+  // refetches automatically when it changes, with no useEffect needed.
   const queryParams = {
     limit: PAGE_SIZE,
     offset,
@@ -96,24 +93,19 @@ export default function InventoryPage() {
     queryKey: ["inventory-search", queryParams],
     queryFn: () => SearchCars(queryParams),
     placeholderData: (prev) => prev,
-    enabled: true,
   });
+
   const { data: offers } = useQuery({
     queryKey: ["offers"],
     queryFn: GetOffers,
   });
 
-  // Fetch all data for filter options (once)
+  // Fetch all data once for filter option derivation
   const { data: allData } = useQuery({
     queryKey: ["inventory-search-all"],
     queryFn: () => SearchCars({ limit: 1000, offset: 0 }),
     staleTime: 5 * 60 * 1000,
   });
-
-  // Refetch when applied filters or search change
-  useEffect(() => {
-    refetch();
-  }, [appliedFilters, offset, sort, search, refetch]);
 
   const handlePageChange = (newOffset: number) => {
     setSearchParams((prev) => {
@@ -124,7 +116,6 @@ export default function InventoryPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Map API results
   const units: InventoryWithCar[] = (data?.results ?? []).map((item: any) => ({
     unit: item,
     car: item.car,
@@ -142,25 +133,26 @@ export default function InventoryPage() {
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
 
   const hasActiveFilters = Object.keys(appliedFilters).length > 0;
+  const appliedFilterCount = Object.keys(appliedFilters).length;
 
   return (
-    <div className="min-h-screen bg-gray-50 mt-5">
+    <div className="min-h-screen bg-gray-50">
       {isInventoryPage && (
         <>
           <InventoryPageHeader totalCount={total} />
           <InventorySearchBar value={search} onChange={setSearch} />
         </>
       )}
-      {/* ── Header ──────────────────────────────────────────────── */}
+
+      {/* ── Sticky sort bar ─────────────────────────────────────── */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-end h-20">
-            {/* Sort & Results count */}
+          <div className="flex items-center justify-end h-12">
             {isInventoryPage && (
               <div className="flex items-center gap-4">
                 {!isLoading && total > 0 && (
-                  <span className="text-sm text-gray-600 hidden sm:inline">
-                    {total} results
+                  <span className="text-xs text-gray-400 hidden sm:inline">
+                    {total} vehicles
                   </span>
                 )}
                 <select
@@ -174,9 +166,9 @@ export default function InventoryPage() {
                       return next;
                     });
                   }}
-                  className="border border-gray-200 bg-white text-sm text-gray-700 py-1.5 pl-3 pr-7 rounded-md outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all cursor-pointer"
+                  className="border border-gray-200 bg-white text-xs text-gray-700 py-1.5 pl-3 pr-7 outline-none focus:border-gray-400 transition-all cursor-pointer"
                 >
-                  <option value="">Sort by: Featured</option>
+                  <option value="">Sort: Featured</option>
                   <option value="selling_price">Price: Low to High</option>
                   <option value="-selling_price">Price: High to Low</option>
                   <option value="-year">Year: Newest First</option>
@@ -192,13 +184,14 @@ export default function InventoryPage() {
       {/* ── Body ────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters sidebar - sticky */}
+          {/* Filters sidebar */}
           {isInventoryPage && (
-            <div className="lg:w-74 shrink-0">
-              <div className="sticky top-24">
+            <div className="lg:w-72 shrink-0">
+              <div className="sticky top-16">
                 <InventoryFilters
                   data={allUnits}
                   filters={pendingFilters}
+                  appliedFilterCount={appliedFilterCount}
                   onFilterChange={setPendingFilters}
                   onApply={applyFilters}
                   onReset={resetFilters}
@@ -215,6 +208,7 @@ export default function InventoryPage() {
               onBrandSelect={(brand) => setFilterMake(brand)}
               onModelSelect={(model) => setFilterModel(model)}
             />
+
             {isError ? (
               <div className="flex flex-col items-center justify-center py-24 gap-3">
                 <p className="text-sm text-gray-500">
@@ -240,13 +234,13 @@ export default function InventoryPage() {
                     No vehicles found
                   </p>
                   <p className="text-sm text-gray-500">
-                    Try adjusting your filters to find what you're looking for.
+                    Try adjusting your filters or search term.
                   </p>
                 </div>
                 {hasActiveFilters && (
                   <button
                     onClick={resetFilters}
-                    className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors"
+                    className="px-4 py-2 bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors"
                   >
                     Clear all filters
                   </button>
@@ -255,7 +249,9 @@ export default function InventoryPage() {
             ) : (
               <>
                 <div
-                  className={`grid grid-cols-1 sm:grid-cols-2 ${isInventoryPage ? "lg:grid-cols-3" : "lg:grid-cols-4"} gap-5`}
+                  className={`grid grid-cols-1 sm:grid-cols-2 ${
+                    isInventoryPage ? "lg:grid-cols-3" : "lg:grid-cols-4"
+                  } gap-5`}
                 >
                   {units.map(({ unit, car }) => {
                     const offer =
@@ -263,16 +259,16 @@ export default function InventoryPage() {
                         (o: Offer) => o.inventory_id === unit.id && o.is_active,
                       ) ?? null;
 
+                    // Key must be on the outermost element returned from map
                     return (
-                      <>
+                      <Fragment key={unit.id}>
                         <InventoryCard
-                          key={unit.id}
                           unit={unit}
                           car={car}
                           offer={offer}
                           onClick={() => navigate(`/inventory/${unit.id}`)}
                         />
-                      </>
+                      </Fragment>
                     );
                   })}
                 </div>
@@ -314,7 +310,7 @@ export default function InventoryPage() {
                           <button
                             key={i}
                             onClick={() => handlePageChange(i * PAGE_SIZE)}
-                            className={`min-w-8 h-8 text-sm font-medium rounded-md transition-colors ${
+                            className={`min-w-8 h-8 text-sm font-medium transition-colors ${
                               isActive
                                 ? "bg-gray-900 text-white"
                                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
