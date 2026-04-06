@@ -9,7 +9,7 @@ import { GetOffers } from "@/features/offers/api";
 import type { Offer } from "@/features/offers/types";
 import { BookTestDriveButton } from "@/shared/components/BookTestDriveButton";
 import { InquiryModal } from "@/shared/components/InquiryModal";
-import { useInquired } from "@/shared/hooks/Useinquired";
+import { useInquired } from "@/shared/hooks/UseInquired";
 import { CheckCircle } from "lucide-react"; // if not already imported
 
 // ─── Scroll spy sections ──────────────────────────────────────────────────────
