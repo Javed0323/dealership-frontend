@@ -249,7 +249,7 @@ const dimensionsFields: FormField<CarDimensionsCreate>[] = [
     name: "tyre_size",
     label: "Tyre Size",
     type: "text",
-    placeholder: "e.g. 225/55R17",
+    placeholder: "e.g. 18 inch",
     section: "Capacity",
   },
 ];
@@ -915,7 +915,6 @@ export default function CarCreate() {
               fields={coreFields}
               initialValues={core}
               mode={isEdit ? "edit" : "create"}
-              loading={loading}
               onSubmit={isEdit ? handleUpdateCore : handleCreate}
             />
           )}

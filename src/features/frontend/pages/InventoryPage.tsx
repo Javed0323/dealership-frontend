@@ -1,11 +1,11 @@
 import InventoryPage from "../components/CarInventory";
-import Offers from "./Offers";
+import OffersSection from "./Offers2";
 
 export default function InventoryPageContainer() {
   return (
     <>
       <InventoryPage />
-      <Offers />
+      <OffersSection />
     </>
   );
 }

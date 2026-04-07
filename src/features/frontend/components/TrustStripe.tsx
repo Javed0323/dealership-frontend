@@ -51,7 +51,7 @@ interface TrustStripProps {
 export default function TrustStrip({ className = "" }: TrustStripProps) {
   return (
     <section
-      className={`border-y border-gray-200 bg-gray-50 py-12 ${className}`}
+      className={`border-y border-gray-200 bg-gray-50 py-12 px-6 ${className}`}
     >
       <div className="mb-8 text-center">
         <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-gray-400 mb-1.5">

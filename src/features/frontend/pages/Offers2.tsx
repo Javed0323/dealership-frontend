@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Tag, Clock, ChevronRight } from "lucide-react";
+import { Tag, Clock } from "lucide-react";
 import { GetOffers } from "@/features/inventory/api";
 import type { Offer } from "@/features/offers/types";
 
@@ -115,8 +115,6 @@ interface OffersSectionProps {
 // --- Main Component ---
 export default function OffersSection({
   limit,
-  showViewAll = false,
-  onViewAll,
   className = "",
 }: OffersSectionProps) {
   const {
@@ -136,7 +134,7 @@ export default function OffersSection({
   if (!isLoading && !isError && activeOffers.length === 0) return null;
 
   return (
-    <section className={`py-10 ${className} px-5`}>
+    <section className={`py-10 px-6 ${className}`}>
       {/* Header */}
       <div className="flex items-end justify-between mb-6 pb-4 border-b border-gray-200">
         <div>
@@ -147,15 +145,6 @@ export default function OffersSection({
             Current Offers
           </h2>
         </div>
-
-        {showViewAll && !isLoading && activeOffers.length > 0 && (
-          <button
-            onClick={onViewAll}
-            className="flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors uppercase tracking-widest pb-0.5"
-          >
-            View all <ChevronRight className="w-3 h-3" />
-          </button>
-        )}
       </div>
 
       {/* Grid */}

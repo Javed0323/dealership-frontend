@@ -129,7 +129,7 @@ export default function FeaturedInventoryStrip({
   const doubled = units.length > 0 ? [...units, ...units] : [];
 
   return (
-    <section className={`py-10 ${className}`}>
+    <section className={`py-10 px-6 ${className}`}>
       {/* Header */}
       <div className="flex items-end justify-between mb-6 pb-4 border-b border-gray-200">
         <div>

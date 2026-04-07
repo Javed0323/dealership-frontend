@@ -38,7 +38,7 @@ export default function TestDriveCreate() {
     {
       name: "phone",
       label: "Phone number",
-      type: "number",
+      type: "text",
       required: true,
     },
     { name: "scheduled_at", label: "scheduled_at", type: "date" },
@@ -56,7 +56,6 @@ export default function TestDriveCreate() {
       name: "notes",
       label: "notes",
       type: "text",
-      required: true,
     },
   ];
 
@@ -95,7 +94,7 @@ export default function TestDriveCreate() {
     full_name: "",
     email: "",
     phone: "",
-    scheduled_at: "",
+    scheduled_at: new Date().toISOString().slice(0, 16), // default to now
     status: "pending",
     notes: "notes",
   };

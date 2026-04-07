@@ -97,7 +97,7 @@ export default function Offers() {
         .offers-section {
           font-family: 'Barlow', sans-serif;
           background: #0a0a0a;
-          padding: 80px 0;
+          padding: 60px 20px;
           min-height: 400px;
         }
 

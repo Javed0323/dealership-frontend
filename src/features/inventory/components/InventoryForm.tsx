@@ -821,7 +821,10 @@ export default function InventoryCreate() {
                       color: "var(--text-faint)",
                     }}
                   >
-                    Required columns: vin, purchase_price
+                    Required columns: vin, purchase_price, selling_price,
+                    discounted_price, registration_number, stock_number,
+                    mileage_km, condition, exterior_color, interior_color,
+                    status, notes
                   </span>
                 </div>
 

@@ -8,11 +8,7 @@ export default function HomePage() {
     <>
       <HeroSection />
       <InventoryPage />
-      <OffersSection
-        limit={3}
-        showViewAll
-        onViewAll={() => console.log("View all offers")}
-      />
+      <OffersSection limit={3} />
       <FeaturedInventoryStrip />
       <TrustStrip />
     </>
