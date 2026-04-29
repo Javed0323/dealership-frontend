@@ -1,7 +1,7 @@
 // Header.tsx
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Menu, X, Phone, CarFront } from "lucide-react";
+import { Menu, X, Phone } from "lucide-react";
 
 interface NavItem {
   name: string;
