@@ -289,7 +289,7 @@ export default function CarDetails() {
   return (
     <div className="min-h-screen bg-white text-zinc-900">
       {/* ── Top Nav Bar ─────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-30 bg-white border-b border-zinc-200 mt-2">
+      <nav className="sticky top-8 z-30 bg-white border-b border-zinc-200 mt-2">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}

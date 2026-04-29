@@ -49,7 +49,6 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <NavLink to="/" className="flex items-center gap-2 group">
-            <CarFront className="h-6 w-6 text-gray-900" strokeWidth={1.5} />
             <span className="text-lg font-semibold tracking-tight text-gray-900">
               AutoElite
             </span>

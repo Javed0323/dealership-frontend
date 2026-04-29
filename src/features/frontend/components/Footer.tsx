@@ -59,11 +59,6 @@ const Footer: React.FC = () => {
               className="inline-flex items-center gap-2.5 text-white group"
               aria-label="AutoElite — go to homepage"
             >
-              <Car
-                className="h-7 w-7 shrink-0 text-white"
-                strokeWidth={1.5}
-                aria-hidden="true"
-              />
               <span className="text-lg font-semibold tracking-tight">
                 AutoElite
               </span>
